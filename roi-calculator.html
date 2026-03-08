@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROI Calculator | Spectrum Sensory Gyms</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+:root{
+  --white:#fff;--off:#fafaf8;--cream:#f5f0e8;--border:#e8e3da;
+  --text:#1a1a18;--text-mid:#555550;--text-light:#999990;
+  --green:#2d6e25;--green-mid:#3d8c33;--green-light:#52a845;--green-pale:#e8f5e4;
+  --gold:#c8980a;--gold-pale:#fef6e0;--red:#e8472a;--blue:#2855c8;
+  --yellow:#f59e0b;--radius:14px;
+  --shadow:0 2px 12px rgba(0,0,0,0.06);--shadow-lg:0 8px 40px rgba(0,0,0,0.12);
+}
+body{font-family:"Figtree",sans-serif;background:var(--off);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;background:rgba(255,255,255,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;gap:32px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo img{height:52px;width:auto;}
+.nav-logo-name{font-size:15px;font-weight:800;color:var(--text);line-height:1.1;}
+.nav-logo-name span{color:var(--green);display:block;font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;}
+.nav-cta{background:var(--green);color:#fff;font-size:14px;font-weight:700;padding:10px 22px;border-radius:10px;text-decoration:none;transition:all 0.2s;}
+.nav-cta:hover{background:var(--green-mid);transform:translateY(-1px);}
+
+/* HERO */
+.hero{background:linear-gradient(150deg,#e8f5e4 0%,#d4eacb 50%,#eaf0e4 100%);padding:120px 32px 80px;text-align:center;position:relative;overflow:hidden;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(45,110,37,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(45,110,37,0.07) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;}
+.hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(255,255,255,0.6) 0%,transparent 70%);pointer-events:none;}
+.hero-inner{position:relative;z-index:2;max-width:800px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(45,110,37,0.1);border:1px solid rgba(45,110,37,0.25);color:var(--green);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 18px;border-radius:100px;margin-bottom:28px;}
+.hero-badge-dot{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero h1{font-size:clamp(40px,7vw,80px);font-weight:900;line-height:1;letter-spacing:-2px;margin-bottom:20px;}
+.hero h1 .green{color:var(--green);display:block;}
+.hero-sub{font-size:18px;color:var(--text-mid);line-height:1.7;max-width:580px;margin:0 auto;}
+
+/* CALCULATOR CONTAINER */
+.calc-wrap{max-width:960px;margin:0 auto;padding:0 32px 80px;}
+
+/* STEP CARDS */
+.step-card{background:var(--white);border-radius:20px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:24px;overflow:hidden;}
+.step-header{padding:28px 36px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-header h2{font-size:20px;font-weight:800;color:var(--text);}
+.step-header p{font-size:14px;color:var(--text-mid);margin-top:2px;}
+.step-body{padding:32px 36px;}
+
+/* DISCIPLINE SELECTOR */
+.discipline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:640px){.discipline-grid{grid-template-columns:1fr 1fr;}}
+.disc-btn{border:2px solid var(--border);background:var(--white);border-radius:14px;padding:20px 16px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.disc-btn:hover{border-color:var(--green);background:var(--green-pale);}
+.disc-btn.active{border-color:var(--green);background:var(--green-pale);box-shadow:0 0 0 3px rgba(45,110,37,0.12);}
+.disc-icon{font-size:32px;margin-bottom:10px;display:block;}
+.disc-name{font-size:15px;font-weight:800;color:var(--text);display:block;margin-bottom:4px;}
+.disc-rate{font-size:13px;color:var(--green);font-weight:600;display:block;}
+.disc-desc{font-size:11px;color:var(--text-light);margin-top:4px;display:block;}
+
+/* MULTI SELECT */
+.multi-note{font-size:13px;color:var(--text-light);margin-bottom:16px;}
+
+/* SLIDERS */
+.slider-group{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+@media(max-width:640px){.slider-group{grid-template-columns:1fr;}}
+.slider-item label{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.slider-item label span{font-size:20px;font-weight:900;color:var(--green);}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);cursor:pointer;box-shadow:0 2px 8px rgba(45,110,37,0.3);}
+input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to right, var(--green) 0%, var(--green) var(--pct,50%), var(--border) var(--pct,50%));height:6px;border-radius:3px;}
+.slider-hint{font-size:12px;color:var(--text-light);margin-top:6px;}
+
+/* INVESTMENT INPUT */
+.invest-row{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+@media(max-width:640px){.invest-row{grid-template-columns:1fr;}}
+.invest-field{position:relative;}
+.invest-field label{font-size:14px;font-weight:700;color:var(--text);display:block;margin-bottom:10px;}
+.invest-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;font-weight:700;color:var(--text-mid);pointer-events:none;margin-top:10px;}
+.invest-input{width:100%;padding:16px 16px 16px 36px;font-size:22px;font-weight:800;color:var(--text);background:var(--off);border:2px solid var(--border);border-radius:12px;font-family:"Figtree",sans-serif;transition:border-color 0.2s;outline:none;}
+.invest-input:focus{border-color:var(--green);background:var(--white);}
+.invest-presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.preset-btn{background:var(--off);border:1px solid var(--border);color:var(--text-mid);font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s;font-family:"Figtree",sans-serif;}
+.preset-btn:hover{background:var(--green-pale);border-color:var(--green);color:var(--green);}
+.facility-select{width:100%;padding:16px;font-size:16px;font-weight:600;color:var(--text);background:var(--off);border:2px solid var(--border);border-radius:12px;font-family:"Figtree",sans-serif;transition:border-color 0.2s;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23555' d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;}
+.facility-select:focus{border-color:var(--green);}
+
+/* RESULTS */
+.results-card{background:linear-gradient(150deg,#1e3a1e 0%,#2d6e25 100%);border-radius:20px;padding:40px 36px;color:#fff;box-shadow:var(--shadow-lg);margin-top:32px;}
+.results-title{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.results-headline{font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-1px;line-height:1.1;margin-bottom:32px;}
+.results-headline span{color:#f0b429;}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px;}
+@media(max-width:640px){.results-grid{grid-template-columns:1fr 1fr;}}
+.result-box{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px;}
+.result-box-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.result-box-val{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:-1px;color:#fff;}
+.result-box-val.gold{color:#f0b429;}
+.result-box-val.green{color:#7edb6a;}
+.result-box-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;}
+
+/* YEAR CHART */
+.year-chart{margin-top:8px;}
+.year-row{display:grid;grid-template-columns:60px 1fr 100px;gap:12px;align-items:center;margin-bottom:10px;}
+.year-label{font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);}
+.year-bar-wrap{background:rgba(255,255,255,0.08);border-radius:4px;height:28px;position:relative;overflow:hidden;}
+.year-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,#52a845,#7edb6a);transition:width 0.8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:4px;}
+.year-bar.gold{background:linear-gradient(90deg,#c8980a,#f0b429);}
+.year-val{font-size:13px;font-weight:800;color:#fff;text-align:right;}
+
+/* GROWTH NOTE */
+.growth-note{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-top:20px;}
+.growth-note-title{font-size:13px;font-weight:800;color:#f0b429;margin-bottom:8px;}
+.growth-note p{font-size:14px;color:rgba(255,255,255,0.65);line-height:1.65;}
+
+/* CTA */
+.calc-cta{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:40px;text-align:center;margin-top:24px;box-shadow:var(--shadow);}
+.calc-cta h3{font-size:28px;font-weight:900;letter-spacing:-0.5px;margin-bottom:12px;}
+.calc-cta p{font-size:16px;color:var(--text-mid);margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto;}
+.btn-green-lg{background:var(--green);color:#fff;font-size:16px;font-weight:700;padding:16px 40px;border-radius:12px;text-decoration:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:10px;}
+.btn-green-lg:hover{background:var(--green-mid);transform:translateY(-2px);box-shadow:0 8px 32px rgba(45,110,37,0.3);}
+.disclaimer{font-size:12px;color:var(--text-light);margin-top:40px;text-align:center;max-width:700px;margin-left:auto;margin-right:auto;line-height:1.7;}
+
+/* FOOTER */
+footer{background:#111310;padding:40px 32px;text-align:center;}
+.footer-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;}
+.footer-logo img{height:40px;}
+.footer-logo-name{font-size:14px;font-weight:800;color:#fff;}
+footer p{font-size:12px;color:rgba(255,255,255,0.3);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <img src="data:image/png;base64,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" alt="Spectrum Sensory Gyms">
+      <div class="nav-logo-name">Spectrum Sensory Gyms<span>Serving All of North America</span></div>
+    </a>
+    <a href="index.html#contact" class="nav-cta">Get Your Complimentary Design</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> ROI Calculator</div>
+    <h1>See Your Return<span class="green">Before You Invest</span></h1>
+    <p class="hero-sub">Enter your clinic type, size, and investment amount to see your projected revenue, payback timeline, and year-over-year growth.</p>
+  </div>
+</section>
+
+<div class="calc-wrap" style="margin-top:48px;">
+
+  <!-- STEP 1: DISCIPLINE -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <h2>Select Your Therapy Discipline(s)</h2>
+        <p>We'll use average session rates and referral patterns for your specialty</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <p class="multi-note">Select all that apply — your gym will serve every discipline you choose</p>
+      <div class="discipline-grid">
+        <div class="disc-btn" data-disc="ot">
+          <span class="disc-icon">🧠</span>
+          <span class="disc-name">Occupational Therapy</span>
+          <span class="disc-rate">$150–$200/session</span>
+          <span class="disc-desc">CPT 97533 · Sensory Integration</span>
+        </div>
+        <div class="disc-btn" data-disc="pt">
+          <span class="disc-icon">🏃</span>
+          <span class="disc-name">Physical Therapy</span>
+          <span class="disc-rate">$120–$180/session</span>
+          <span class="disc-desc">CPT 97530 · Therapeutic Activity</span>
+        </div>
+        <div class="disc-btn active" data-disc="aba">
+          <span class="disc-icon">🎯</span>
+          <span class="disc-name">ABA Therapy</span>
+          <span class="disc-rate">$120–$200/hour</span>
+          <span class="disc-desc">BCBA-led · Behavior Analysis</span>
+        </div>
+        <div class="disc-btn" data-disc="slp">
+          <span class="disc-icon">💬</span>
+          <span class="disc-name">Speech-Language</span>
+          <span class="disc-rate">$100–$175/session</span>
+          <span class="disc-desc">CPT 92507 · Speech Therapy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: FACILITY & SESSIONS -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <h2>Your Clinic Size & Capacity</h2>
+        <p>Helps us calculate realistic session volume and referral growth</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="invest-row" style="margin-bottom:28px;">
+        <div>
+          <label style="font-size:14px;font-weight:700;display:block;margin-bottom:10px;">Facility Size</label>
+          <select class="facility-select" id="facilitySize">
+            <option value="small">Small Clinic (1–3 therapists)</option>
+            <option value="medium" selected>Mid-Size Clinic (4–8 therapists)</option>
+            <option value="large">Large Clinic (9+ therapists)</option>
+            <option value="hospital">Hospital / School System</option>
+          </select>
+          <p class="slider-hint" style="margin-top:8px;">Smaller clinics see faster capacity fill — and faster expansion pressure</p>
+        </div>
+        <div>
+          <label style="font-size:14px;font-weight:700;display:block;margin-bottom:10px;">Operating Days Per Year</label>
+          <select class="facility-select" id="opDays">
+            <option value="200">~200 days (part-time)</option>
+            <option value="240" selected>~240 days (standard)</option>
+            <option value="300">~300 days (extended hours)</option>
+          </select>
+        </div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-item">
+          <label>Daily Gym Sessions <span id="sessVal">6</span></label>
+          <input type="range" id="sessions" min="2" max="20" value="6">
+          <p class="slider-hint">How many sessions will use the gym per day?</p>
+        </div>
+        <div class="slider-item">
+          <label>New Referrals Per Month <span id="refVal">8</span></label>
+          <input type="range" id="referrals" min="1" max="40" value="8">
+          <p class="slider-hint">Expected new patients driven by the sensory gym</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: INVESTMENT -->
+  <div class="step-card">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <h2>Your Sensory Gym Investment</h2>
+        <p>Enter your expected investment or choose a common package size</p>
+      </div>
+    </div>
+    <div class="step-body">
+      <div class="invest-row">
+        <div class="invest-field">
+          <label>Gym Investment Amount</label>
+          <div style="position:relative;">
+            <span class="invest-prefix">$</span>
+            <input class="invest-input" type="number" id="investment" value="35000" min="10000" max="500000">
+          </div>
+          <div class="invest-presets">
+            <button class="preset-btn">$15K — Starter</button>
+            <button class="preset-btn">$35K — Standard</button>
+            <button class="preset-btn">$60K — Premium</button>
+            <button class="preset-btn">$100K — Full Build</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:14px;font-weight:700;display:block;margin-bottom:10px;">Average Sessions Per Referral</label>
+          <select class="facility-select" id="sessPerRef">
+            <option value="20">20 sessions (short-term)</option>
+            <option value="36" selected>36 sessions (average)</option>
+            <option value="52">52 sessions (long-term)</option>
+            <option value="80">80+ sessions (chronic/ongoing)</option>
+          </select>
+          <p class="slider-hint" style="margin-top:8px;">How many sessions does a typical patient complete?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-card" id="results">
+    <div class="results-title">Your Projected ROI</div>
+    <div class="results-headline">You could generate <span id="res-y1">$0</span> in Year 1</div>
+    <div class="results-grid">
+      <div class="result-box">
+        <div class="result-box-label">Direct Session Revenue</div>
+        <div class="result-box-val gold" id="res-direct">$0</div>
+        <div class="result-box-sub" id="res-direct-sub">from gym sessions</div>
+      </div>
+      <div class="result-box">
+        <div class="result-box-label">Referral Revenue</div>
+        <div class="result-box-val green" id="res-referral">$0</div>
+        <div class="result-box-sub" id="res-ref-sub">from new patients</div>
+      </div>
+      <div class="result-box">
+        <div class="result-box-label">Payback Period</div>
+        <div class="result-box-val" id="res-payback">0 mo</div>
+        <div class="result-box-sub">to recoup investment</div>
+      </div>
+      <div class="result-box">
+        <div class="result-box-label">Net Year 1</div>
+        <div class="result-box-val gold" id="res-net1">$0</div>
+        <div class="result-box-sub">after investment</div>
+      </div>
+      <div class="result-box">
+        <div class="result-box-label">Net Year 3</div>
+        <div class="result-box-val green" id="res-net3">$0</div>
+        <div class="result-box-sub">cumulative</div>
+      </div>
+      <div class="result-box">
+        <div class="result-box-label">Avg Rate Used</div>
+        <div class="result-box-val" id="res-rate">$0</div>
+        <div class="result-box-sub">blended session rate</div>
+      </div>
+    </div>
+
+    <div class="year-chart">
+      <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:14px;">Year-Over-Year Revenue Growth</div>
+      <div class="year-row">
+        <div class="year-label">Year 1</div>
+        <div class="year-bar-wrap"><div class="year-bar" id="bar-y1" style="width:33%"></div></div>
+        <div class="year-val" id="bar-y1-val">$0</div>
+      </div>
+      <div class="year-row">
+        <div class="year-label">Year 2</div>
+        <div class="year-bar-wrap"><div class="year-bar" id="bar-y2" style="width:55%"></div></div>
+        <div class="year-val" id="bar-y2-val">$0</div>
+      </div>
+      <div class="year-row">
+        <div class="year-label">Year 3</div>
+        <div class="year-bar-wrap"><div class="year-bar gold" id="bar-y3" style="width:100%"></div></div>
+        <div class="year-val" id="bar-y3-val">$0</div>
+      </div>
+    </div>
+
+    <div class="growth-note" id="growth-note">
+      <div class="growth-note-title">⚡ Growth Insight</div>
+      <p id="growth-note-text">Based on your inputs, here is what to expect...</p>
+    </div>
+  </div>
+
+  <div class="calc-cta">
+    <h3>Ready to see your custom design?</h3>
+    <p>Get a complimentary gym design tailored to your clinic's disciplines, space, and patient population — no commitment required.</p>
+    <a href="index.html#contact" class="btn-green-lg">Get Your Complimentary Design <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+  </div>
+
+  <p class="disclaimer">* All projections are estimates based on industry averages for pediatric therapy practices. Actual results will vary based on location, payer mix, patient volume, therapist capacity, and other factors. Spectrum Sensory Gyms makes no guarantees of specific financial outcomes. Consult with a financial advisor before making investment decisions.</p>
+
+</div>
+
+<footer>
+  <div class="footer-logo">
+    <img src="data:image/png;base64,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" alt="Spectrum Sensory Gyms">
+    <div class="footer-logo-name">Spectrum Sensory Gyms</div>
+  </div>
+  <p>© 2026 Spectrum Sensory Gyms LLC · Bear Creek, Wisconsin · Serving All of North America</p>
+</footer>
+
+<script>
+const DISC_RATES = {
+  ot:  { low: 150, high: 200, name: "OT" },
+  pt:  { low: 120, high: 180, name: "PT" },
+  aba: { low: 120, high: 200, name: "ABA" },
+  slp: { low: 100, high: 175, name: "SLP" }
+};
+
+const FACILITY_MULTIPLIERS = {
+  small:    { sessMax: 5,  refCapPerMonth: 4,  note: "Small clinics fill their gym fast — typically within 6–9 months you'll be turning away new referrals. Most expand to a second location within 2 years." },
+  medium:   { sessMax: 10, refCapPerMonth: 10, note: "Mid-size clinics are the sweet spot. You have enough therapist capacity to absorb steady referral growth and hit payback within 12–18 months." },
+  large:    { sessMax: 18, refCapPerMonth: 20, note: "Larger clinics can absorb significant referral volume. Expect strong Year 2–3 returns as your gym becomes a known community resource." },
+  hospital: { sessMax: 28, refCapPerMonth: 35, note: "Hospital and school systems see the broadest referral networks. ROI is strong but build time is longer as you work through institutional processes." }
+};
+
+let selectedDiscs = new Set(['aba']);
+
+function toggleDisc(btn) {
+  const disc = btn.dataset.disc;
+  if (selectedDiscs.has(disc)) {
+    if (selectedDiscs.size > 1) {
+      selectedDiscs.delete(disc);
+      btn.classList.remove('active');
+    }
+  } else {
+    selectedDiscs.add(disc);
+    btn.classList.add('active');
+  }
+  calculate();
+}
+
+function syncSlider(el, valId) {
+  document.getElementById(valId).textContent = el.value;
+  const pct = ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1) + '%';
+  el.style.setProperty('--pct', pct);
+}
+
+function setInvestment(val) {
+  document.getElementById('investment').value = val;
+  calculate();
+}
+
+function fmt(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + Math.round(n);
+}
+
+function calculate() {
+  const investment = parseFloat(document.getElementById('investment').value) || 35000;
+  const sessions   = parseInt(document.getElementById('sessions').value);
+  const referrals  = parseInt(document.getElementById('referrals').value);
+  const opDays     = parseInt(document.getElementById('opDays').value);
+  const sessPerRef = parseInt(document.getElementById('sessPerRef').value);
+  const facKey     = document.getElementById('facilitySize').value;
+  const fac        = FACILITY_MULTIPLIERS[facKey];
+
+  // Blended rate — use conservative (low) end, not midpoint
+  let totalRate = 0;
+  selectedDiscs.forEach(d => { totalRate += DISC_RATES[d].low; });
+  const blendedRate = totalRate / selectedDiscs.size;
+
+  // Cap sessions at facility max AND at user input
+  const effectiveSessions = Math.min(sessions, fac.sessMax);
+
+  // Direct revenue: sessions the gym enables, but not every session = new revenue
+  // Assume 70% utilization (some sessions would have happened anyway)
+  const directY1 = effectiveSessions * opDays * blendedRate * 0.70;
+
+  // Referrals: cap at facility's monthly capacity, ramp slowly
+  // Year 1: referrals take time to build — only 40% of target volume materializes
+  // Year 2: 70%, Year 3: 90% (never assume 100% — churn, no-shows, etc.)
+  const cappedMonthlyRefs = Math.min(referrals, fac.refCapPerMonth);
+  const annualRefsY1 = cappedMonthlyRefs * 12 * 0.40;
+  const annualRefsY2 = cappedMonthlyRefs * 12 * 0.70;
+  const annualRefsY3 = cappedMonthlyRefs * 12 * 0.90;
+
+  // Not every referral completes their full course — assume 75% completion
+  const refRevenueY1 = annualRefsY1 * sessPerRef * blendedRate * 0.75;
+  const refRevenueY2 = annualRefsY2 * sessPerRef * blendedRate * 0.75;
+  const refRevenueY3 = annualRefsY3 * sessPerRef * blendedRate * 0.75;
+
+  // Direct revenue grows modestly as therapists get more efficient with the gym
+  const grossY1 = directY1 + refRevenueY1;
+  const grossY2 = directY1 * 1.05 + refRevenueY2;
+  const grossY3 = directY1 * 1.08 + refRevenueY3;
+
+  const netY1 = grossY1 - investment;
+  const netY3cumulative = grossY1 + grossY2 + grossY3 - investment;
+
+  const monthlyGross = grossY1 / 12;
+  const paybackMonths = Math.ceil(investment / monthlyGross);
+
+  document.getElementById('res-y1').textContent = fmt(grossY1);
+  document.getElementById('res-direct').textContent = fmt(directY1);
+  document.getElementById('res-direct-sub').textContent = effectiveSessions + ' sessions/day × ' + opDays + ' days';
+  document.getElementById('res-referral').textContent = fmt(refRevenueY1);
+  document.getElementById('res-ref-sub').textContent = Math.round(annualRefsY1) + ' new patients in Year 1';
+  document.getElementById('res-payback').textContent = paybackMonths + ' mo';
+  document.getElementById('res-net1').textContent = fmt(netY1);
+  document.getElementById('res-net3').textContent = fmt(netY3cumulative);
+  document.getElementById('res-rate').textContent = '$' + Math.round(blendedRate);
+
+  const maxVal = grossY3;
+  document.getElementById('bar-y1').style.width = (grossY1/maxVal*100).toFixed(1) + '%';
+  document.getElementById('bar-y2').style.width = (grossY2/maxVal*100).toFixed(1) + '%';
+  document.getElementById('bar-y3').style.width = '100%';
+  document.getElementById('bar-y1-val').textContent = fmt(grossY1);
+  document.getElementById('bar-y2-val').textContent = fmt(grossY2);
+  document.getElementById('bar-y3-val').textContent = fmt(grossY3);
+
+  let note = fac.note;
+  if (referrals > fac.refCapPerMonth) {
+    note += ` Note: we've capped referrals at ${fac.refCapPerMonth}/month based on your facility size — realistic for your therapist capacity.`;
+  }
+  if (paybackMonths <= 12) note += ' At this pace, you could recoup your investment within the first year.';
+  else if (paybackMonths <= 18) note += " You're on track to fully recoup your investment within 18 months.";
+  document.getElementById('growth-note-text').textContent = note;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Discipline buttons
+  document.querySelectorAll('.disc-btn').forEach(btn => {
+    btn.addEventListener('click', function() { toggleDisc(this); });
+  });
+
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const amounts = { 'Starter': 15000, 'Standard': 35000, 'Premium': 60000, 'Full Build': 100000 };
+      const label = this.textContent.split('—')[1].trim();
+      setInvestment(amounts[label]);
+    });
+  });
+
+  // Sliders
+  document.getElementById('sessions').addEventListener('input', function() {
+    syncSlider(this, 'sessVal'); calculate();
+  });
+  document.getElementById('referrals').addEventListener('input', function() {
+    syncSlider(this, 'refVal'); calculate();
+  });
+
+  // Selects and number input
+  ['facilitySize','opDays','sessPerRef'].forEach(id => {
+    document.getElementById(id).addEventListener('change', calculate);
+  });
+  document.getElementById('investment').addEventListener('input', calculate);
+
+  // Init slider track fills
+  document.querySelectorAll('input[type=range]').forEach(el => {
+    const pct = ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1) + '%';
+    el.style.setProperty('--pct', pct);
+  });
+
+  // Initial calculation
+  calculate();
+});
+</script>
+</body>
+</html>
